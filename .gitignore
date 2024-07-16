@@ -1,0 +1,9 @@
+# Ignore folders named /input1 and /input2
+# Ignore files named /output1 and /output2
+/input/*
+/output/*
+*.txt
+*.bam
+*.bam.bai
+*.fa
+.gtf
