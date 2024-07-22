@@ -1,4 +1,5 @@
 import re, os, sys, logging, time, datetime
+from methods.print_and_log import print_and_log
 
 
 def listToString(x):
@@ -17,15 +18,14 @@ def uniq(inlist):
     return uniques
 
 
-def find_as_events(gtf, prefix, output_dir, log_dir):
-    ### setting up the logging format
-    log_filename = os.path.join(log_dir, f"log.as_events.{str(datetime.datetime.now())}")
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s", filename=log_filename, filemode="w")
+def find_as_events(gtf, prefix, output_dir, logger):
+    # Step 1: Find alternative splicing events
+    print_and_log("----------------------------------------------------------------", logger)
+    print_and_log("| STEP 1: Finding alternative splicing events...               |", logger)
+    print_and_log("----------------------------------------------------------------", logger)
 
-    ##### Getting Start Time ######
-    logging.debug("Start the program with [%s]\n", listToString([gtf, log_dir]))
-    startTime = time.time()
-    ###
+    start = time.perf_counter()
+
     iFile = open(gtf)  ## input gtf file
     # Create the output directory if it doesn't exist
     output_dir = os.path.join(output_dir, prefix)
@@ -116,8 +116,8 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                 gName = [dName, dVal]
 
         if gID[0].upper() != "GENE_ID" or txID[0].upper() != "TRANSCRIPT_ID":  ## wrong one..
-            logging.debug("This line does not have correct description for gID or txID: %s, %s" % (gID, txID))
-            logging.debug("Incorrect description: %s" % ele)
+            logger.debug("This line does not have correct description for gID or txID: %s, %s" % (gID, txID))
+            logger.debug("Incorrect description: %s" % ele)
             continue  ## process next line
 
         for i in group:  ## for each possible group
@@ -146,7 +146,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #    else:  ## new gene ID
     #      cds[gID[1]] = {};
     #      cds[gID[1]][txID[1]] = [[int(sC), int(eC)]]; ## add first exon
-    # logging.debug("Done populating genes and cds dictionaries");
+    # logger.info("Done populating genes and cds dictionaries");
     #
     # print
     # sys.exit(0);
@@ -155,7 +155,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #
     ## stats
     #
-    logging.debug("======== stats from genes =========")
+    logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~ GENE STATS ~~~~~~~~~~~~~~~~~~~~~~~~~~")
     #
     nGene = len(genes)  ## number of genes in genes dict
     nTx = 0  ## number of transcripts
@@ -176,20 +176,20 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                 if len(genes[id]) == 1:  ## one tx gene
                     oneTxOneExon += 1
 
-    logging.debug("There are %d distinct gene ID in the gtf file" % nGene)
-    logging.debug("There are %d distinct transcript ID in the gtf file" % nTx)
-    logging.debug("There are %d one-transcript genes in the gtf file" % oneTx)
-    logging.debug("There are %d exons in the gtf file" % nExon)
-    logging.debug("There are %d one-exon transcripts in the gtf file" % oneExon)
-    logging.debug("There are %d one-transcript genes with only one exon in the transcript" % oneTxOneExon)
+    logger.info("There are %d distinct gene ID in the gtf file" % nGene)
+    logger.info("There are %d distinct transcript ID in the gtf file" % nTx)
+    logger.info("There are %d one-transcript genes in the gtf file" % oneTx)
+    logger.info("There are %d exons in the gtf file" % nExon)
+    logger.info("There are %d one-exon transcripts in the gtf file" % oneExon)
+    logger.info("There are %d one-transcript genes with only one exon in the transcript" % oneTxOneExon)
     if nGene > 0:  ## to avoid divided by zero exception
-        logging.debug("Average number of transcripts per gene is %f" % (float(nTx) / nGene))
+        logger.info("Average number of transcripts per gene is %f" % (float(nTx) / nGene))
     if nTx > 0:  ## to avoid divided by zero exception
-        logging.debug("Average number of exons per transcript is %f" % (float(nExon) / nTx))
+        logger.info("Average number of exons per transcript is %f" % (float(nExon) / nTx))
     if (nTx - oneExon) > 0:  ## to avoid divided by zero exception
-        logging.debug("Average number of exons per transcript excluding one-exon tx is %f" % (float(nExon - oneExon) / (nTx - oneExon)))
+        logger.info("Average number of exons per transcript excluding one-exon tx is %f" % (float(nExon - oneExon) / (nTx - oneExon)))
     #
-    # logging.debug("======== stats from cds =========");
+    # logger.info("======== stats from cds =========");
     #
     # nGene=len(cds); ## number of genes in cds dict
     # nTx=0; ## number of transcripts
@@ -210,33 +210,28 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #      if len(cds[id])==1: ## one tx gene
     #        oneTxOneExon+=1;
     #
-    # logging.debug("There are %d distinct gene ID in the gtf file" % nGene);
-    # logging.debug("There are %d distinct transcript ID in the gtf file" % nTx);
-    # logging.debug("There are %d one-transcript genes in the gtf file" % oneTx);
-    # logging.debug("There are %d exons in the gtf file" % nExon);
-    # logging.debug("There are %d one-exon transcripts in the gtf file" % oneExon);
-    # logging.debug("There are %d one-transcript genes with only one cds in the transcript" % oneTxOneExon);
+    # logger.info("There are %d distinct gene ID in the gtf file" % nGene);
+    # logger.info("There are %d distinct transcript ID in the gtf file" % nTx);
+    # logger.info("There are %d one-transcript genes in the gtf file" % oneTx);
+    # logger.info("There are %d exons in the gtf file" % nExon);
+    # logger.info("There are %d one-exon transcripts in the gtf file" % oneExon);
+    # logger.info("There are %d one-transcript genes with only one cds in the transcript" % oneTxOneExon);
     # if (nGene>0): ## to avoid divided by zero exception
-    #  logging.debug("Average number of transcripts per gene is %f" % (float(nTx)/nGene));
+    #  logger.info("Average number of transcripts per gene is %f" % (float(nTx)/nGene));
     # if (nTx>0): ## to avoid divided by zero exception
-    #  logging.debug("Average number of cds per transcript is %f" % (float(nExon)/nTx));
+    #  logger.info("Average number of cds per transcript is %f" % (float(nExon)/nTx));
     # if (nTx-oneExon)>0: ## to avoid divided by zero exception
-    #  logging.debug("Average number of cds per transcript excluding one-cds tx is %f" % (float(nExon-oneExon)/(nTx-oneExon)));
+    #  logger.info("Average number of cds per transcript excluding one-cds tx is %f" % (float(nExon-oneExon)/(nTx-oneExon)));
     #
-    logging.debug("======== stats from geneGroup =========")
-    #
-    tgi = 0  ## total geneIDs
-    ##
+    logger.info("~~~~~~~~~~~~~~~~~~~~~~~ GENE GROUP STATS ~~~~~~~~~~~~~~~~~~~~~~~")
+    tgi = 0
     for gg in geneGroup:
         tgi += len(geneGroup[gg])
-    logging.debug("There are total of %d groups and %d genes in geneGroup" % (len(geneGroup), tgi))
-    logging.debug("The average number of genes in each group is %f" % (float(tgi) / len(geneGroup)))
-    #
-    logging.debug("==========================================\n")
-    #
-    #
-    ### sort transcripts ###
-    #
+    logger.info("There are total of %d groups and %d genes in geneGroup" % (len(geneGroup), tgi))
+    logger.info("The average number of genes in each group is %f" % (float(tgi) / len(geneGroup)))
+    logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+    # SORT THE TRANSCRIPTS
     for gID in genes:
         for tID in genes[gID]:  ## sort each transcript
             if len(genes[gID][tID]) == 1:  ## only one exon, skip it
@@ -251,7 +246,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #     if len(s1.strip()) < 1:  ## incorrect split. a user might accidently put comma at the end of input sam file list
     #         continue  ### just skip this entry, probably the last one though
     #     samIndex += 1  ## for the novel tx index
-    #     logging.debug("processing %s" % s1.strip())
+    #     logger.info("processing %s" % s1.strip())
     #     sFile = open(s1.strip())  ## open sam file
     #     for line in sFile:  ## process each line
     #         if len(line.strip().split("\t")) < 5 or line[0] == "#" or line[0] == "@":  ## blank line or comment
@@ -317,7 +312,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #                         # print ("Junction: %d - %d" % (jS,jE+1));
     #                         # print ("%s: %s" % (key, ntx[key]));
     #                         else:  ### should not be here..
-    #                             logging.debug("Check this out..gene: %s, tx: %s, uExon: %s, dExon: %s" % (cg, ctx, cexons[uInd], cexons[dInd]))
+    #                             logger.info("Check this out..gene: %s, tx: %s, uExon: %s, dExon: %s" % (cg, ctx, cexons[uInd], cexons[dInd]))
     #                 ## end of for ctx in genes[cg]
     #                 for novelT in ntx:  ## for all novel transcript
     #                     txName = cg + ".novel_" + str(samIndex) + "_" + novelT
@@ -331,7 +326,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #     ## end of for cg in geneGroup[group]
     #     ## end of elif junction read
     #     ## end of for line in sFile
-    #     logging.debug("Done processing %s" % s1.strip())
+    #     logger.info("Done processing %s" % s1.strip())
 
     #
     # print "=== genes ===";
@@ -347,7 +342,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
         return False
 
     #
-    logging.debug("Process each gene from dictionary")
+    logger.info("Processing each gene from dictionary...")
     #
     numSkippingEvents = 0
     numMXEvents = 0
@@ -654,31 +649,6 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     ### end of else: end of merging genes
     ### end for gID in genes
 
-    logging.debug("Done processing each gene from dictionary to compile AS events")
-    #
-    logging.debug("Found %d exon skipping events, from dic %d" % (numSkippingEvents, len(sEvents)))
-    logging.debug("duplicate skipping events: %d" % dupSE)
-    #
-    logging.debug("Found %d exon MX events, from dic %d" % (numMXEvents, len(mxEvents)))
-    logging.debug("duplicate MXE events: %d" % dupMXE)
-    # logging.debug("Filtered MXE events: %d" % filteredMXE);
-    #
-    logging.debug("Found %d alt SS events" % (len(ss3Events) + len(ss5Events)))
-    logging.debug("There are %d alt 5 SS events and %d alt 3 SS events." % (num5, num3))
-    logging.debug("duplicate alt-5 SS events: %d" % dupSS5)
-    logging.debug("duplicate alt-3 SS events: %d" % dupSS3)
-    #
-    #
-    logging.debug("Found %d AFE events, from dic %d" % (numAFE, len(afeEvents)))
-    # logging.debug("duplicate AFE events: %d" % dupAFE);
-    #
-    logging.debug("Found %d ALE events, from dic %d" % (numALE, len(aleEvents)))
-    # logging.debug("duplicate ALE events: %d" % dupALE);
-    #
-    logging.debug("Found %d RI events, from dic %d" % (numRI, len(riEvents)))
-    logging.debug("duplicate RI events: %d" % dupRI)
-    #
-
     iFile.close()
     oFile_3.close()
     oFile_5.close()
@@ -699,7 +669,20 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     #############
     ## calculate total running time
     #############
-    logging.debug("Program ended")
-    currentTime = time.time()
-    runningTime = currentTime - startTime  ## in seconds
-    logging.debug("Program ran %.2d:%.2d:%.2d" % (runningTime / 3600, (runningTime % 3600) / 60, runningTime % 60))
+
+    totalEvents = numSkippingEvents + numMXEvents + num5 + num3 + numAFE + numALE + numRI
+    print_and_log(f"{numSkippingEvents} Exon skipping events ({numSkippingEvents/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{numMXEvents} MX events ({numMXEvents/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{num5} Alt 5 SS events ({num5/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{num3} Alt 3 SS events ({num3/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{numAFE} AFE events ({numAFE/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{numALE} ALE events ({numALE/totalEvents*100:.2f}%)", logger)
+    print_and_log(f"{numRI} RI events ({numRI/totalEvents*100:.2f}%)", logger)
+    logger.info(f"{dupSE} duplicate skipping events")
+    logger.info(f"{dupMXE} duplicate MXE events")
+    logger.info(f"{dupSS5} duplicate alt-5 SS events")
+    logger.info(f"{dupSS3} duplicate alt-3 SS events")
+    logger.info(f"{dupRI} duplicate RI events")
+    print_and_log(f"Step 1 Completed in {time.perf_counter() - start:.2f} seconds", logger)
+    print_and_log("----------------------------------------------------------------\n", logger)
+    logger.handlers[0].stream.write("\n\n")

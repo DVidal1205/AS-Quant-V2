@@ -1,12 +1,13 @@
 import sys
 import time
+from methods.print_and_log import print_and_log
 
 
-def preprocess_gene_ids(gtf, ref, outf):
+def preprocess_gene_ids(gtf, ref, outf, logger):
     # Step 0: Correct gene_id in GTF file using refFlat file
-    print("\n----------------------------------------------------------------")
-    print("| STEP 0: Correcting gene_id in GTF file using refFlat file... |")
-    print("----------------------------------------------------------------")
+    print_and_log("----------------------------------------------------------------", logger)
+    print_and_log("| STEP 0: Correcting gene_id in GTF file using refFlat file... |", logger)
+    print_and_log("----------------------------------------------------------------", logger)
 
     start = time.perf_counter()
 
@@ -64,10 +65,11 @@ def preprocess_gene_ids(gtf, ref, outf):
 
     # Print the number of transcripts without a gene ID to stderr
     n = len(list_dict)
-    print(f"{count} transcripts processed ", file=sys.stderr)
-    print(f"{drop_count} transcripts dropped ", file=sys.stderr)
-    print(f"Step 0 Completed in {time.perf_counter() - start:.2f} seconds")
-    print("----------------------------------------------------------------\n")
+    print_and_log(f"{count} transcripts processed ", logger)
+    print_and_log(f"{drop_count} transcripts dropped ", logger)
+    print_and_log(f"Step 0 Completed in {time.perf_counter() - start:.2f} seconds", logger)
+    print_and_log("----------------------------------------------------------------", logger)
+    logger.handlers[0].stream.write('\n\n')
 
     # # Print each missing gene_id to stderr
     # for key in list_dict:
