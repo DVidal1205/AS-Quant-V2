@@ -51,25 +51,32 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
     # #
 
     ### write out header
-    ceHeader = "chrom\tgene\tgeneSymbol\tstrand\texonStart_0base\texonEnd\tupstreamES\tupstreamEE\tdownstreamES\tdownstreamEE"
+    ceHeader = "chrom\tgene\texonStart\texonEnd\tstrand"
     oFile_ce.write(ceHeader + "\n")
     # neFile_ce.write(ceHeader + "\n")
-    mxeHeader = "chrom\tgene\tgeneSymbol\tstrand\t1stExonStart_0base\t1stExonEnd\t2ndExonStart_0base\t2ndExonEnd\tupstreamES\tupstreamEE\tdownstreamES\tdownstreamEE"
+    mxeHeader = "chrom\tgene\texon1Start\texon1End\texon2Start\texon2End\tstrand"
     oFile_mxe.write(mxeHeader + "\n")
     # neFile_mxe.write(mxeHeader + "\n")
     # oFile_mxe_filtered.write(mxeHeader+'\n');
 
-    altSSHeader = "chrom\tgene\tgeneSymbol\tstrand\tlongExonStart_0base\tlongExonEnd\tshortES\tshortEE\tflankingES\tflankingEE"
+    # FORMATTING CHECKLIST
+    # A3SS and A5SS DONE
+    # MXE DONE
+    # RI DONE
+    # SE DONE
+    #
+
+    altSSHeader = "chrom\tgene\tlongExonStart\tlongExonEnd\tshortExonStart\tshortExonEnd\tstrand"
     oFile_3.write(altSSHeader + "\n")
     oFile_5.write(altSSHeader + "\n")
     # neFile_3.write(altSSHeader + "\n")
     # neFile_5.write(altSSHeader + "\n")
-    altFLHeader = "chrom\tgene\tgeneSymbol\tstrand\tdistalExonStart_0base\tdistalExonEnd\tproximalES\tproximalEE\tflankingES\tflankingEE"
+    altFLHeader = "chrom\tgene\tdistalExonStart\tdistalExonEnd\tproximalExonStart\tproximalExonEnd\tstrand"
     oFile_afe.write(altFLHeader + "\n")
     oFile_ale.write(altFLHeader + "\n")
     # neFile_afe.write(altFLHeader + "\n")
     # neFile_ale.write(altFLHeader + "\n")
-    riHeader = "chrom\tgene\tgeneSymbol\tstrand\triExonStart_0base\triExonEnd\tupstreamES\tupstreamEE\tdownstreamES\tdownstreamEE"
+    riHeader = "chrom\tgene\texonStart\tExonEnd\tstrand"
     oFile_ri.write(riHeader + "\n")
     # neFile_ri.write(riHeader + "\n")
     c = 0
@@ -426,7 +433,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                     else:  ## new key, write it
                                         sEvents[key] = 1
                                         numSkippingEvents += 1
-                                        oFile_ce.write(supInfo[1] + "\t" + gID + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(f2[0] - 1) + "\t" + str(f2[1]) + "\n")
+                                        oFile_ce.write(supInfo[1] + "\t" + gID + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + supInfo[2] + "\n")
                                         # if tID.find("novel") >= 0:  # It involves novel junction
                                         #     neFile_ce.write(str(numSkippingEvents) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(f2[0] - 1) + "\t" + str(f2[1]) + "\n")
                 ###################
@@ -478,7 +485,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                         else:
                                             numMXEvents += 1
                                             mxEvents[key] = 1
-                                            oFile_mxe.write(supInfo[1] + "\t" + gID + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(mxe[0] - 1) + "\t" + str(mxe[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(f2[0] - 1) + "\t" + str(f2[1]) + "\n")
+                                            oFile_mxe.write(supInfo[1] + "\t" + gID + "\t" + str(mxe[0] - 1) + "\t" + str(mxe[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + supInfo[2] + "\n")
                                             # if tID.find("novel") >= 0:  # It involves novel junction
                                             #     neFile_mxe.write(str(numMXEvents) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(mxe[0] - 1) + "\t" + str(mxe[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(f2[0] - 1) + "\t" + str(f2[1]) + "\n")
 
@@ -496,7 +503,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                 else:
                                     ss5Events[key] = 1
                                     num5 += 1
-                                    oFile_5.write(supInfo[1] + "\t" + gID + "\t" + str(e[0] - 1) + "\t" + str(max(e[1], u[1])) + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                    oFile_5.write(supInfo[1] + "\t" + gID + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     # if tID.find("novel") >= 0:  # It involves novel junction
                                     #     neFile_5.write(str(num5) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(e[0] - 1) + "\t" + str(max(e[1], u[1])) + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
                             else:  ## neg strand. alt-3 event
@@ -505,7 +512,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                 else:
                                     ss3Events[key] = 1
                                     num3 += 1
-                                    oFile_3.write(supInfo[1] + "\t" + gID + "\t" + str(e[0] - 1) + "\t" + str(max(e[1], u[1])) + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                    oFile_3.write(supInfo[1] + "\t" + gID + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     # if tID.find("novel") >= 0:  # It involves novel junction
                                     #     neFile_3.write(str(num3) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(e[0] - 1) + "\t" + str(max(e[1], u[1])) + "\t" + str(e[0] - 1) + "\t" + str(min(e[1], u[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
 
@@ -522,7 +529,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                 else:
                                     ss3Events[key] = 1
                                     num3 += 1
-                                    oFile_3.write(supInfo[1] + "\t" + gID + "\t" + str(min(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                    oFile_3.write(supInfo[1] + "\t" + gID + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     # if tID.find("novel") >= 0:  # It involves novel junction
                                     #     neFile_3.write(str(num3) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(min(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
                             else:  ## neg strand. alt-5 event
@@ -531,7 +538,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                 else:
                                     ss5Events[key] = 1
                                     num5 += 1
-                                    oFile_5.write(supInfo[1] + "\t" + gID + "\t" + str(min(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                    oFile_5.write(supInfo[1] + "\t" + gID + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     # if tID.find("novel") >= 0:  # It involves novel junction
                                     #     neFile_5.write(str(num5) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(min(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(max(e[0], d[0]) - 1) + "\t" + str(e[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
 
@@ -565,7 +572,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                         else:  ## new AFE
                                             afeEvents[key] = 1
                                             numAFE += 1
-                                            oFile_afe.write(supInfo[1] + "\t" + gID + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                            oFile_afe.write(supInfo[1] + "\t" + gID + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     else:  ## neg strand. ALE, alt last exon event
                                         key = supInfo[1] + ":" + str(ce[0] - 1) + ":" + str(ce[1]) + ":"
                                         key += str(min(fEx[0], cfEx[0]) - 1) + ":" + str(min(fEx[1], cfEx[1])) + ":"
@@ -575,7 +582,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                         else:  ## new ALE
                                             aleEvents[key] = 1
                                             numALE += 1
-                                            oFile_ale.write(supInfo[1] + "\t" + gID + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                            oFile_ale.write(supInfo[1] + "\t" + gID + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
 
                     if [ce[0], ce[1]] == genes[gID][tID][-2]:  ## current exon is the 2nd to the last exon in the tx
                         fEx = genes[gID][tID][-1]  ## lastExon, find other tx with different fEX (non overlapping)
@@ -600,7 +607,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                         else:  ## new AFE
                                             afeEvents[key] = 1
                                             numAFE += 1
-                                            oFile_afe.write(supInfo[1] + "\t" + gID + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                            oFile_afe.write(supInfo[1] + "\t" + gID + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
                                     else:  ## pos strand. ALE, alt last exon event
                                         key = supInfo[1] + ":" + str(ce[0] - 1) + ":" + str(ce[1]) + ":"
                                         key += str(min(fEx[0], cfEx[0]) - 1) + ":" + str(min(fEx[1], cfEx[1])) + ":"
@@ -610,7 +617,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                                         else:  ## new ALE
                                             aleEvents[key] = 1
                                             numALE += 1
-                                            oFile_ale.write(supInfo[1] + "\t" + gID + "\t" + str(max(fEx[0], cfEx[0]) - 1) + "\t" + str(max(fEx[1], cfEx[1])) + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                            oFile_ale.write(supInfo[1] + "\t" + gID + "\t" + str(min(fEx[0], cfEx[0]) - 1) + "\t" + str(min(fEx[1], cfEx[1])) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + supInfo[2] + "\n")
 
                 ### Retained Intron events
                 for i in range(0, len(uf)):  ### going through the upstream flanking exons
@@ -625,7 +632,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                             else:  ## new key, write it
                                 riEvents[key] = 1
                                 numRI += 1
-                                oFile_ri.write(supInfo[1] + "\t" + gID + "\t" + str(f1[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
+                                oFile_ri.write(supInfo[1] + "\t" + gID + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + supInfo[2] + "\n")
                                 # if tID.find("novel") >= 0:  # It involves novel junction
                                 #     neFile_ri.write(str(numRI) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(f1[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\n")
 
@@ -640,7 +647,7 @@ def find_as_events(gtf, prefix, output_dir, log_dir):
                             else:  ## new key, write it
                                 riEvents[key] = 1
                                 numRI += 1
-                                oFile_ri.write(supInfo[1] + "\t" + gID + "\t" + str(ce[0] - 1) + "\t" + str(f1[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\n")
+                                oFile_ri.write(supInfo[1] + "\t" + gID + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\t" + supInfo[2] + "\n")
                                 # if tID.find("novel") >= 0:  # It involves novel junction
                                 #     neFile_ri.write(str(numRI) + "\t" + gID + "\t" + "\t".join(supInfo) + "\t" + str(ce[0] - 1) + "\t" + str(f1[1]) + "\t" + str(ce[0] - 1) + "\t" + str(ce[1]) + "\t" + str(f1[0] - 1) + "\t" + str(f1[1]) + "\n")
 

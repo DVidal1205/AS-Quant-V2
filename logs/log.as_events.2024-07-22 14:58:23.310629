@@ -1,0 +1,33 @@
+2024-07-22 14:58:23,310 Start the program with [/home/dvidal1205-ld/Documents/research/AS-Quant-V2/output/gtf_preprocess/hg38.gtf /home/dvidal1205-ld/Documents/research/AS-Quant-V2/logs ]
+
+2024-07-22 14:58:28,747 ======== stats from genes =========
+2024-07-22 14:58:28,769 There are 28114 distinct gene ID in the gtf file
+2024-07-22 14:58:28,769 There are 76053 distinct transcript ID in the gtf file
+2024-07-22 14:58:28,769 There are 15288 one-transcript genes in the gtf file
+2024-07-22 14:58:28,769 There are 882193 exons in the gtf file
+2024-07-22 14:58:28,769 There are 3944 one-exon transcripts in the gtf file
+2024-07-22 14:58:28,769 There are 3793 one-transcript genes with only one exon in the transcript
+2024-07-22 14:58:28,769 Average number of transcripts per gene is 2.705165
+2024-07-22 14:58:28,769 Average number of exons per transcript is 11.599713
+2024-07-22 14:58:28,769 Average number of exons per transcript excluding one-exon tx is 12.179464
+2024-07-22 14:58:28,769 ======== stats from geneGroup =========
+2024-07-22 14:58:28,782 There are total of 147094 groups and 316132 genes in geneGroup
+2024-07-22 14:58:28,782 The average number of genes in each group is 2.149184
+2024-07-22 14:58:28,782 ==========================================
+
+2024-07-22 14:58:28,843 Process each gene from dictionary
+2024-07-22 14:58:38,554 Done processing each gene from dictionary to compile AS events
+2024-07-22 14:58:38,554 Found 22457 exon skipping events, from dic 22457
+2024-07-22 14:58:38,554 duplicate skipping events: 51587
+2024-07-22 14:58:38,554 Found 3830 exon MX events, from dic 3830
+2024-07-22 14:58:38,554 duplicate MXE events: 3268
+2024-07-22 14:58:38,554 Found 14797 alt SS events
+2024-07-22 14:58:38,554 There are 7064 alt 5 SS events and 7733 alt 3 SS events.
+2024-07-22 14:58:38,554 duplicate alt-5 SS events: 155
+2024-07-22 14:58:38,554 duplicate alt-3 SS events: 159
+2024-07-22 14:58:38,554 Found 9171 AFE events, from dic 9171
+2024-07-22 14:58:38,554 Found 1280 ALE events, from dic 1280
+2024-07-22 14:58:38,554 Found 2485 RI events, from dic 2485
+2024-07-22 14:58:38,554 duplicate RI events: 10511
+2024-07-22 14:58:38,559 Program ended
+2024-07-22 14:58:38,559 Program ran 00:00:15
