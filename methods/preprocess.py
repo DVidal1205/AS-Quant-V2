@@ -37,7 +37,6 @@ def preprocess_gene_ids(gtf, ref, outf, logger):
                 # Extract gene_id and transcript_id from the attributes field (info[8])
                 g_id = info[8].split('gene_id "')[1].split('";')[0]
                 g_id = g_id.split(".")[0]
-                # print("Gene ID Extracted:", g_id)
 
                 # Check for XM, XR, and YP prefixes in gene_id, and filter them out
                 if g_id.startswith("XM") or g_id.startswith("XR") or g_id.startswith("YP"):
@@ -46,7 +45,6 @@ def preprocess_gene_ids(gtf, ref, outf, logger):
 
                 # If gene_id is in refFlat hash dictionary, use the corresponding gene_name
                 if g_id in hash_dict:
-                    # print("Gene ID Found in refFlat, correcting:", gene_id)
                     gene_id = hash_dict[g_id]
                 else:
                     # If gene_id is not in refFlat, drop the transcript
