@@ -1,5 +1,5 @@
 from methods.preprocess import preprocess_gene_ids
-from methods.find_events import find_as_events
+from methods.find_as_events import find_as_events
 import configparser
 import logging
 import os
