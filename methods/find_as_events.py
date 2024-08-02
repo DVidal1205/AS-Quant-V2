@@ -40,7 +40,7 @@ def find_as_events(gtf, prefix, output_dir, logger):
     mxe_header = "chrom\tgene\texon1Start\texon1End\texon2Start\texon2End\tstrand"
     alt_ss_header = "chrom\tgene\tlongExonStart\tlongExonEnd\tshortExonStart\tshortExonEnd\tstrand"
     alt_fl_headerder = "chrom\tgene\tdistalExonStart\tdistalExonEnd\tproximalExonStart\tproximalExonEnd\tstrand"
-    ri_header = "chrom\tgene\texonStart\tExonEnd\tstrand"
+    ri_header = "chrom\tgene\texonStart\texonEnd\tstrand"
 
     # Write headers to the output files
     se_output.write(se_header + "\n")
@@ -703,5 +703,6 @@ def find_as_events(gtf, prefix, output_dir, logger):
     logger.info(f"{duplicate_ss3} duplicate alt-3 SS events")
     logger.info(f"{duplicate_ri} duplicate RI events")
     print_and_log(f"Step 1 Completed in {time.perf_counter() - start:.2f} seconds", logger)
-    print_and_log("----------------------------------------------------------------\n", logger)
+    print_and_log("----------------------------------------------------------------", logger)
+    print()
     logger.handlers[0].stream.write("\n\n")

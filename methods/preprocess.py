@@ -1,8 +1,13 @@
 import sys
 import time
 from methods.print_and_log import print_and_log
+from methods.methods import SamtoTextParallel, SamtoTextSequential
+import os
+import glob
+from multiprocessing import cpu_count
 
 
+# Function to preprocess gene IDs in the GTF file
 def preprocess_gene_ids(gtf, ref, outf, logger):
     # Step 0: Correct gene_id in GTF file using refFlat file
     print_and_log("----------------------------------------------------------------", logger)
@@ -19,9 +24,6 @@ def preprocess_gene_ids(gtf, ref, outf, logger):
             # info[1] is gene_id and info[0] is gene_name in refFlat file
             hash_dict[info[1]] = info[0].replace('"', "").replace(";", "")
     # print(hash_dict)
-
-    # Create a dictionary to record transcripts that don't have gene ID in refFlat
-    list_dict = {}
 
     # Open the GTF file for reading and the output file for writing
     count = 0
@@ -62,13 +64,122 @@ def preprocess_gene_ids(gtf, ref, outf, logger):
             out_file.write("\t".join(info) + "\n")
 
     # Print the number of transcripts without a gene ID to stderr
-    n = len(list_dict)
     print_and_log(f"{count} transcripts processed ", logger)
     print_and_log(f"{drop_count} transcripts dropped ", logger)
     print_and_log(f"Step 0 Completed in {time.perf_counter() - start:.2f} seconds", logger)
     print_and_log("----------------------------------------------------------------", logger)
-    logger.handlers[0].stream.write('\n\n')
+    logger.handlers[0].stream.write("\n\n")
+    print()
 
     # # Print each missing gene_id to stderr
     # for key in list_dict:
     #     print(f"~{key}~", file=sys.stderr)
+
+
+# Function to preprocess the BAM files using samtools
+def preprocess_bam_files(input1_dir, input2_dir, species, samtools, cores, logger):
+    # Step 1: Preprocess the BAM files using samtools
+    print_and_log("----------------------------------------------------------------", logger)
+    print_and_log("| STEP 2: Preprocessing BAM files using Samtools...            |", logger)
+    print_and_log("----------------------------------------------------------------", logger)
+
+    start = time.perf_counter()
+
+    # First determine the chromosomes to use based off species
+    chromosomes_h = [
+        "chr1",
+        "chr2",
+        "chr3",
+        "chr4",
+        "chr5",
+        "chr6",
+        "chr7",
+        "chr8",
+        "chr9",
+        "chr10",
+        "chr11",
+        "chr12",
+        "chr13",
+        "chr14",
+        "chr15",
+        "chr16",
+        "chr17",
+        "chr18",
+        "chr19",
+        "chr20",
+        "chr21",
+        "chr22",
+        "chrX",
+        "chrY",
+    ]
+    chromosomes_m = [
+        "chr1",
+        "chr2",
+        "chr3",
+        "chr4",
+        "chr5",
+        "chr6",
+        "chr7",
+        "chr8",
+        "chr9",
+        "chr10",
+        "chr11",
+        "chr12",
+        "chr13",
+        "chr14",
+        "chr15",
+        "chr16",
+        "chr17",
+        "chr18",
+        "chr19",
+        "chrX",
+        "chrY",
+    ]
+    if species == "hg38" or species == "hg19":
+        chromosomes = chromosomes_h
+    elif species == "mm10":
+        chromosomes = chromosomes_m
+    else:
+        print_and_log("ERROR: SPECIES NOT FOUND. PLEASE SELECT: hg38, hg19, or mm10", logger)
+        sys.exit()
+
+    # Handle Cores
+    parallel = True
+
+    # Handle MAX and NULL flags
+    if cores.upper() == "MAX" or cores.upper() == "NULL":
+        if cores.upper() == "MAX":
+            cores = cpu_count()
+            print("Running AS-Quant with", cores, "cores...")
+        else:
+            cores = 1
+            parallel = False
+
+    # Grab the number of cores to use from the command line, if within the available range. Otherwise, exit.
+    if int(cores) > cpu_count():
+        cores = cpu_count()
+
+    # If specified cores is equal to 1, then run the code in sequential mode
+    if int(cores) == 1:
+        parallel = False
+
+    # Generate the coverage files for each chromosome using samtools
+    current = os.getcwd()
+    os.chdir(input1_dir)
+    for file1 in glob.glob("*.bam"):
+        if parallel:
+            SamtoTextParallel(input1_dir, current, file1, chromosomes, samtools, cores, logger)
+        else:
+            SamtoTextSequential(input1_dir, current, file1, chromosomes, samtools, logger)
+    os.chdir(os.path.join(current, input2_dir))
+    for file2 in glob.glob("*.bam"):
+        if parallel:
+            SamtoTextParallel(input2_dir, current, file2, chromosomes, samtools, cores, logger)
+        else:
+            SamtoTextSequential(input2_dir, current, file2, chromosomes, samtools, logger)
+    os.chdir(current)
+
+    print_and_log(f"Step 2 Completed in {time.perf_counter() - start:.2f} seconds", logger)
+    print_and_log("----------------------------------------------------------------", logger)
+    logger.handlers[0].stream.write("\n\n")
+    print()
