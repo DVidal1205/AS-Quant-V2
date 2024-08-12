@@ -16,7 +16,7 @@ def list_dirs(path):
 
 
 def as_quant(species, output_dir, as_events, input1_dir, input2_dir, annotation_file, method, novel, cores, logger):
-    # Step 13: Run AS-Quant
+    # Step 3: Run AS-Quant
     print_and_log("----------------------------------------------------------------", logger)
     print_and_log("| STEP 3: Running AS-Quant...                                  |", logger)
     print_and_log("----------------------------------------------------------------", logger)

@@ -31,15 +31,12 @@ def find_as_events(gtf, prefix, output_dir, logger):
     a5ss_output = open(os.path.join(output_dir, "A5SS.csv"), "w")
     se_output = open(os.path.join(output_dir, "SE.csv"), "w")
     mxe_output = open(os.path.join(output_dir, "MXE.csv"), "w")
-    afe_output = open(os.path.join(output_dir, "AFE.csv"), "w")
-    ale_output = open(os.path.join(output_dir, "ALE.csv"), "w")
     ri_output = open(os.path.join(output_dir, "RI.csv"), "w")
 
     # Create the initial headers for the output files
     se_header = "chrom\tgene\texonStart\texonEnd\tstrand"
     mxe_header = "chrom\tgene\texon1Start\texon1End\texon2Start\texon2End\tstrand"
     alt_ss_header = "chrom\tgene\tlongExonStart\tlongExonEnd\tshortExonStart\tshortExonEnd\tstrand"
-    alt_fl_headerder = "chrom\tgene\tdistalExonStart\tdistalExonEnd\tproximalExonStart\tproximalExonEnd\tstrand"
     ri_header = "chrom\tgene\texonStart\texonEnd\tstrand"
 
     # Write headers to the output files
@@ -47,8 +44,6 @@ def find_as_events(gtf, prefix, output_dir, logger):
     mxe_output.write(mxe_header + "\n")
     a3ss_output.write(alt_ss_header + "\n")
     a5ss_output.write(alt_ss_header + "\n")
-    afe_output.write(alt_fl_headerder + "\n")
-    ale_output.write(alt_fl_headerder + "\n")
     ri_output.write(ri_header + "\n")
 
     # Process the GTF file
@@ -227,8 +222,6 @@ def find_as_events(gtf, prefix, output_dir, logger):
     mx_events = {}
     ss3_events = {}
     ss5_events = {}
-    afe_events = {}
-    ale_events = {}
     ri_events = {}
 
     # Accumulator values
@@ -236,8 +229,6 @@ def find_as_events(gtf, prefix, output_dir, logger):
     num_mxe_events = 0
     num3 = 0
     num5 = 0
-    num_afe = 0
-    num_ale = 0
     num_ri = 0
 
     # Accumulator values for duplicates
@@ -486,144 +477,7 @@ def find_as_events(gtf, prefix, output_dir, logger):
                                 a5ss_output.write(f"{sup_info[1]}\t{gene_id}\t{max(first_exon[0], second_exon[0]) - 1}\t{first_exon[1]}\t{current_exon[0] - 1}\t{current_exon[1]}\t{sup_info[2]}\n")
 
             """
-            3. ALTERNATIVE FIRST EXON (AFE) AND ALTERNATIVE LAST EXON (ALE) EVENTS
-
-            This section of code processes both alternative first exon (AFE) and alternative last exon (ALE) events for a given gene.
-            The goal is to identify cases where there are alternative first or last exons in transcripts of the gene. 
-
-            For AFE events, it checks if the current exon is the second exon in the transcript and compares the first exon with the 
-            first exon of other transcripts to identify non-overlapping exons.
-            For ALE events, it checks if the current exon is the second to last exon in the transcript and compares the last exon with 
-            the last exon of other transcripts to identify non-overlapping exons.
-
-            If the strand is positive, it differentiates between AFE and ALE events based on the position of the exons.
-            """
-
-            # This function determines if an exon is fully contained in an internal exon
-            def fully_contained_in_internal_exon(myExon, myGeneID):
-                # Iterate through the transcripts
-                for mytranscript_id in genes[myGeneID]:
-                    # For each internal exon
-                    for intExon in genes[myGeneID][mytranscript_id][1:-1]:
-                        # Check if the exon is fully contained
-                        if intExon[0] <= myExon[0] and intExon[1] >= myExon[1]:  ## fully contained
-                            return True
-                return False
-
-            # Iterate through the transcripts in the gene
-            for transcript_id in genes[gene_id]:
-                # Skip if there are less than two exons
-                if len(genes[gene_id][transcript_id]) < 2:
-                    continue
-
-                # Check if the current exon is the second exon in the transcript (for AFE events)
-                if [current_exon[0], current_exon[1]] == genes[gene_id][transcript_id][1]:
-                    # Extract the first exon
-                    first_exon = genes[gene_id][transcript_id][0]
-
-                    # Skip if the first exon is fully contained in an internal exon
-                    if fully_contained_in_internal_exon(first_exon, gene_id):
-                        continue
-
-                    # Iterate through the candidate transcripts
-                    for candidate_transcript_id in genes[gene_id]:
-                        # Skip if there are less than two exons in the candidate transcript
-                        if len(genes[gene_id][candidate_transcript_id]) < 2:
-                            continue
-
-                        # Check if the current exon is the second exon in the candidate transcript
-                        if [current_exon[0], current_exon[1]] == genes[gene_id][candidate_transcript_id][1]:
-                            # Extract the candidate first exon
-                            candidate_first_exon = genes[gene_id][candidate_transcript_id][0]
-
-                            # Check if the first exon and candidate first exon are non-overlapping
-                            if candidate_first_exon[0] > first_exon[1] or first_exon[0] > candidate_first_exon[1]:
-                                # Check if the candidate first exon is fully contained in an internal exon
-                                if fully_contained_in_internal_exon(candidate_first_exon, gene_id):
-                                    continue
-
-                                # Check if the strand is positive (indicating an AFE event)
-                                if sup_info[2] == "+":
-                                    # Create a unique key for the AFE event
-                                    key = f"{sup_info[1]}:{current_exon[0] - 1}:{current_exon[1]}:{min(first_exon[0], candidate_first_exon[0]) - 1}:{min(first_exon[1], candidate_first_exon[1])}:{max(first_exon[0], candidate_first_exon[0]) - 1}:{max(first_exon[1], candidate_first_exon[1])}"
-
-                                    # Check if the key is already in the AFE events dictionary
-                                    if key in afe_events:
-                                        pass  # Do nothing if it's a duplicate
-                                    else:
-                                        # Otherwise, add the key to the AFE events dictionary and increment the AFE event count
-                                        afe_events[key] = 1
-                                        num_afe += 1
-                                        afe_output.write(f"{sup_info[1]}\t{gene_id}\t{max(first_exon[0], candidate_first_exon[0]) - 1}\t{max(first_exon[1], candidate_first_exon[1])}\t{current_exon[0] - 1}\t{current_exon[1]}\t{sup_info[2]}\n")
-                                else:
-                                    # If the strand is negative (indicating an ALE event)
-                                    # Create a unique key for the ALE event
-                                    key = f"{sup_info[1]}:{current_exon[0] - 1}:{current_exon[1]}:{min(first_exon[0], candidate_first_exon[0]) - 1}:{min(first_exon[1], candidate_first_exon[1])}:{max(first_exon[0], candidate_first_exon[0]) - 1}:{max(first_exon[1], candidate_first_exon[1])}"
-
-                                    # Check if the key is already in the ALE events dictionary
-                                    if key in ale_events:
-                                        pass  # Do nothing if it's a duplicate
-                                    else:
-                                        # Otherwise, add the key to the ALE events dictionary and increment the ALE event count
-                                        ale_events[key] = 1
-                                        num_ale += 1
-                                        ale_output.write(f"{sup_info[1]}\t{gene_id}\t{max(first_exon[0], candidate_first_exon[0]) - 1}\t{max(first_exon[1], candidate_first_exon[1])}\t{current_exon[0] - 1}\t{current_exon[1]}\t{sup_info[2]}\n")
-
-                # Check if the current exon is the second to last exon in the transcript (for ALE events)
-                if [current_exon[0], current_exon[1]] == genes[gene_id][transcript_id][-2]:
-                    # Extract the last exon
-                    last_exon = genes[gene_id][transcript_id][-1]
-
-                    # Check if the last exon is fully contained in an internal exon
-                    if fully_contained_in_internal_exon(last_exon, gene_id):
-                        continue
-
-                    # Iterate through the candidate transcripts
-                    for candidate_transcript_id in genes[gene_id]:
-                        # Skip if there are less than two exons in the candidate transcript
-                        if len(genes[gene_id][candidate_transcript_id]) < 2:
-                            continue
-
-                        # Check if the current exon is the second to last exon in the candidate transcript
-                        if [current_exon[0], current_exon[1]] == genes[gene_id][candidate_transcript_id][-2]:
-                            # Extract the candidate last exon
-                            candidate_last_exon = genes[gene_id][candidate_transcript_id][-1]
-
-                            # Check if the last exon and candidate last exon are non-overlapping
-                            if candidate_last_exon[0] > last_exon[1] or last_exon[0] > candidate_last_exon[1]:
-                                # Check if the candidate last exon is fully contained in an internal exon
-                                if fully_contained_in_internal_exon(candidate_last_exon, gene_id):
-                                    continue
-
-                                # Check if the strand is negative (indicating an AFE event)
-                                if sup_info[2] == "-":
-                                    # Create a unique key for the AFE event
-                                    key = f"{sup_info[1]}:{current_exon[0] - 1}:{current_exon[1]}:{min(last_exon[0], candidate_last_exon[0]) - 1}:{min(last_exon[1], candidate_last_exon[1])}:{max(last_exon[0], candidate_last_exon[0]) - 1}:{max(last_exon[1], candidate_last_exon[1])}"
-
-                                    # Check if the key is already in the AFE events dictionary
-                                    if key in afe_events:
-                                        pass  # Do nothing if it's a duplicate
-                                    else:
-                                        # Otherwise, add the key to the AFE events dictionary and increment the AFE event count
-                                        afe_events[key] = 1
-                                        num_afe += 1
-                                        afe_output.write(f"{sup_info[1]}\t{gene_id}\t{min(last_exon[0], candidate_last_exon[0]) - 1}\t{min(last_exon[1], candidate_last_exon[1])}\t{current_exon[0] - 1}\t{current_exon[1]}\t{sup_info[2]}\n")
-                                else:
-                                    # If the strand is positive (indicating an ALE event)
-                                    # Create a unique key for the ALE event
-                                    key = f"{sup_info[1]}:{current_exon[0] - 1}:{current_exon[1]}:{min(last_exon[0], candidate_last_exon[0]) - 1}:{min(last_exon[1], candidate_last_exon[1])}:{max(last_exon[0], candidate_last_exon[0]) - 1}:{max(last_exon[1], candidate_last_exon[1])}"
-
-                                    # Check if the key is already in the ALE events dictionary
-                                    if key in ale_events:
-                                        pass  # Do nothing if it's a duplicate
-                                    else:
-                                        # Otherwise, add the key to the ALE events dictionary and increment the ALE event count
-                                        ale_events[key] = 1
-                                        num_ale += 1
-                                        ale_output.write(f"{sup_info[1]}\t{gene_id}\t{min(last_exon[0], candidate_last_exon[0]) - 1}\t{min(last_exon[1], candidate_last_exon[1])}\t{current_exon[0] - 1}\t{current_exon[1]}\t{sup_info[2]}\n")
-
-            """
-            4. RETAINED INTRON (RI) EVENTS
+            3. RETAINED INTRON (RI) EVENTS
 
             This section of code processes retained intron (RI) events for a given gene. The goal is to identify cases where an intron is retained
             in some transcripts of the gene. 
@@ -684,18 +538,14 @@ def find_as_events(gtf, prefix, output_dir, logger):
     a5ss_output.close()
     se_output.close()
     mxe_output.close()
-    afe_output.close()
-    ale_output.close()
     ri_output.close()
 
     # Log the completion status and statistics
-    total_events = num_skipping_events + num_mxe_events + num5 + num3 + num_afe + num_ale + num_ri
+    total_events = num_skipping_events + num_mxe_events + num5 + num3 + num_ri
     print_and_log(f"{num_skipping_events} Exon skipping events ({num_skipping_events/total_events*100:.2f}%)", logger)
     print_and_log(f"{num_mxe_events} MX events ({num_mxe_events/total_events*100:.2f}%)", logger)
     print_and_log(f"{num5} Alt 5 SS events ({num5/total_events*100:.2f}%)", logger)
     print_and_log(f"{num3} Alt 3 SS events ({num3/total_events*100:.2f}%)", logger)
-    print_and_log(f"{num_afe} AFE events ({num_afe/total_events*100:.2f}%)", logger)
-    print_and_log(f"{num_ale} ALE events ({num_ale/total_events*100:.2f}%)", logger)
     print_and_log(f"{num_ri} RI events ({num_ri/total_events*100:.2f}%)", logger)
     logger.info(f"{duplicate_se} duplicate skipping events")
     logger.info(f"{duplicate_mxe} duplicate MXE events")
