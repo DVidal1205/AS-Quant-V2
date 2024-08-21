@@ -121,7 +121,6 @@ def preprocess_gene_ids(gtf, ref, outf, annotation_file, logger):
     print_and_log(f"{drop_count} transcripts dropped ", logger)
 
 
-
 # Function to preprocess the BAM files using samtools
 def preprocess_bam_files(input1_dir, input2_dir, species, samtools, cores, logger):
     # Step 1: Preprocess the BAM files using samtools
