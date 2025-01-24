@@ -1,12 +1,13 @@
+import csv
+import glob
+import os
 import sys
 import time
-from methods.print_and_log import print_and_log
-from methods.methods import SamtoTextParallel, SamtoTextSequential
-import os
-import glob
 from collections import defaultdict
 from multiprocessing import cpu_count
-import csv
+
+from methods.methods import SamtoTextParallel, SamtoTextSequential
+from methods.print_and_log import print_and_log
 
 
 # Function to preprocess the GTF file
@@ -21,11 +22,34 @@ def preprocess_gene_ids(gtf, ref, outf, annotation_file, logger):
 
     # Create a dictionary to store gene_id to gene_name mappings from refFlat file
     hash_dict = {}
-    with open(ref, "r") as ref_file:
-        for line in ref_file:
-            info = line.split()
-            # info[1] is gene_id and info[0] is gene_name in refFlat file
-            hash_dict[info[1]] = info[0].replace('"', "").replace(";", "")
+    with open(ref, "r", newline="") as ref_file:
+        csv_reader = csv.reader(ref_file)  # Default is comma as delimiter
+
+        for row in csv_reader:
+            # Skip empty rows
+            if not row:
+                continue
+
+            # Skip the header line if it starts with '#'
+            # Because that line may parse as ['#"geneName","name",...'] or something similar
+            if row[0].startswith("#"):
+                continue
+
+            # At this point, row should look like:
+            # ["Xkr4", "NM_001011874", "chr1", "-", "3284704", "3741721", "3286244", "3741571", ...]
+            # So row[0] is geneName, row[1] is transcript/gene_id, etc.
+
+            # Make sure we have enough columns
+            if len(row) < 2:
+                # Log or continue depending on your needs
+                continue
+
+            # row[0] = geneName, row[1] = transcript_id (or gene_id)
+            gene_name = row[0].strip()
+            gene_id = row[1].strip()
+
+            # Store in the dictionary
+            hash_dict[gene_id] = gene_name
 
     # Dictionaries to store data for each transcript
     # transcripts (defaultdict)
